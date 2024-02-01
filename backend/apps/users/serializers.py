@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.users.error_codes import AccountErrorCodes
-from apps.users.models import Company
+
 from project import settings
 
 
@@ -54,21 +54,18 @@ class AuthRegisterSerializer(serializers.ModelSerializer):
             raise ValidationError(AccountErrorCodes.USER_EXIST)
 
 
-class CompanySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Company
-        fields = '__all__'
+
 
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     email = serializers.CharField(write_only=True)
-    company = CompanySerializer(required=False)
+    
 
     class Meta:
         model = get_user_model()
         fields = [
-            'id', 'first_name', 'last_name', 'email', 'password', 'company', 'phone', 'role'
+            'id', 'first_name', 'last_name', 'email', 'password', 'phone', 'role'
         ]
 
     def create(self, validated_data):
