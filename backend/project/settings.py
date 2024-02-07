@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'apps.files',
     'apps.users',
     'apps.consultations',
+    'apps.vaccinations',
+    'apps.orders',
 ]
 
 MIDDLEWARE = [

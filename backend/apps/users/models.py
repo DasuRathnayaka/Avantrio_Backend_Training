@@ -22,22 +22,12 @@ class User(AbstractUser,SafeDeleteModel):
     role = models.CharField(
         max_length=20,
         choices=Roles.choices,
-        default=Roles.DOCTOR
     )
     phone = models.CharField(max_length=15, null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
 
-    #def is_super_admin(self):
-        #return self.role == Roles.SUPER_ADMIN or self.is_superuser
-
-    #def is_admin_user(self):
-        #return self.role in [Roles.ADMIN, Roles.SUPER_ADMIN]
-
-    #def is_user(self):
-        #return self.role == Roles.USER
-
     def generate_email_verification_code(self):
-        verification = self.email_verifications.create(code=generate_token(6))
+        verification = self.email_verifications.create(code=(generate_token(6)))
         send_mail(
             'Please confirm your email.',
             self.email,
@@ -45,16 +35,17 @@ class User(AbstractUser,SafeDeleteModel):
             {'verification_code': verification.code}
         )
 
-class Doctor(User):
+class Doctor(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     specialty = models.CharField(max_length=50)
-    scr_access = models.BooleanField()
-    online_consultation_capability = models.BooleanField()
-    
-class Patient(User):
+        
+class Patient(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     age = models.PositiveIntegerField()
     address = models.CharField(max_length=200)
     
-class PharmacyUser(User):
+class PharmacyUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     registration_number = models.CharField(max_length=10)         
 
 
