@@ -36,16 +36,16 @@ class User(AbstractUser,SafeDeleteModel):
         )
 
 class Doctor(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name = 'doctor')
     specialty = models.CharField(max_length=50)
         
 class Patient(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name = 'patient')
     age = models.PositiveIntegerField()
     address = models.CharField(max_length=200)
     
 class PharmacyUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name = 'pharmacy_user')
     registration_number = models.CharField(max_length=10)         
 
 
@@ -60,4 +60,4 @@ class UserEmailVerification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
+         ordering = ['-created_at']
