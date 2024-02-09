@@ -12,4 +12,4 @@ class Country(models.Model):
 class Pharmacy(models.Model):
     postal_code = models.CharField(max_length=50)
     vaccine = models.ManyToManyField(Vaccine, related_name='vaccine_pharmacies')
-    pharmacy_user = models.OneToOneField(PharmacyUser, default=None ,on_delete=models.CASCADE, related_name='pharmacy')
+    owner = models.OneToOneField(PharmacyUser, default=None ,on_delete=models.CASCADE, related_name='pharmacy')
