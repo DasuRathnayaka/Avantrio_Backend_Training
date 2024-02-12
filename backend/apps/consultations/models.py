@@ -15,6 +15,7 @@ class Availability(models.Model):
 class Appointment(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='appointments')
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='appointments')
+    pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE, related_name='appointments', default = None)
     date = models.DateTimeField()
     time = models.DateTimeField()
     time_extension = models.DateTimeField()
@@ -22,11 +23,12 @@ class Appointment(models.Model):
     fit_notes = models.BooleanField()
     is_shared_with_GP = models.BooleanField()
     extra_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    SCR_consent = models.BooleanField()    
+    scr_consent = models.BooleanField()    
 
 class FormAssessment(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='form_assessments')
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='form_assessments')
+    pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE, related_name='form_assessments', default = None)
     is_accessed = models.BooleanField()
     is_subscribed = models.BooleanField()
     is_subscription_valid = models.BooleanField()
