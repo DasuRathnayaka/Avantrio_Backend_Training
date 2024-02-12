@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', '!94cvjzfvjm9u%q&6dfsgx0_t$^vd_7(%v(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.environ.get("DEBUG", default=0)) == 0
 
-ALLOWED_HOSTS = ['localhost', 'apps.avantrio.xyz', os.environ.get('APP_HOST', '')]
+ALLOWED_HOSTS = ['127.0.0.1','localhost', 'apps.avantrio.xyz', os.environ.get('APP_HOST', '')]
 
 # Application definition
 
@@ -44,6 +44,9 @@ INSTALLED_APPS = [
     'apps.common',
     'apps.files',
     'apps.users',
+    'apps.consultations',
+    'apps.vaccinations',
+    'apps.orders',
 ]
 
 MIDDLEWARE = [
@@ -252,3 +255,4 @@ ZAPPA_AWS_REGION = os.getenv('ZAPPA_AWS_REGION', '')
 
 # Test runner
 TEST_RUNNER = 'project.pytest_runner.PytestTestRunner'
+

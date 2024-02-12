@@ -13,45 +13,40 @@ from apps.common.services import generate_token, send_mail
 class Roles(models.TextChoices):
     # User Roles
     SUPER_ADMIN = 'SUPER_ADMIN', _('SUPER_ADMIN')
-    ADMIN = 'ADMIN', _('ADMIN')
-    USER = 'USER', _('USER')
+    DOCTOR = 'DOCTOR', _('DOCTOR')
+    PATIENT = 'PATIENT', _('PATIENT')
+    PHARMACY_USER = 'PHARMACY_USER', _('PHARMACY_USER')
 
-
-class Company(SafeDeleteModel):
-    name = models.BinaryField(max_length=100, null=True, blank=True)
-    logo = models.TextField(null=True, blank=True)
-    owner = models.ForeignKey('users.User', on_delete=models.CASCADE,
-                              related_name='managing_company', null=True, blank=True)
-    created_date = models.DateTimeField(auto_now_add=True)
-
-
-class User(AbstractUser, SafeDeleteModel):
+class User(AbstractUser,SafeDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     role = models.CharField(
         max_length=20,
         choices=Roles.choices,
-        default=Roles.USER
     )
     phone = models.CharField(max_length=15, null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
 
-    def is_super_admin(self):
-        return self.role == Roles.SUPER_ADMIN or self.is_superuser
-
-    def is_admin_user(self):
-        return self.role in [Roles.ADMIN, Roles.SUPER_ADMIN]
-
-    def is_user(self):
-        return self.role == Roles.USER
-
     def generate_email_verification_code(self):
-        verification = self.email_verifications.create(code=generate_token(6))
+        verification = self.email_verifications.create(code=(generate_token(6)))
         send_mail(
             'Please confirm your email.',
             self.email,
             EmailTemplates.AUTH_VERIFICATION,
             {'verification_code': verification.code}
         )
+
+class Doctor(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name = 'doctor')
+    specialty = models.CharField(max_length=50)
+        
+class Patient(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name = 'patient')
+    age = models.PositiveIntegerField()
+    address = models.CharField(max_length=200)
+    
+class PharmacyUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name = 'pharmacy_user')
+    registration_number = models.CharField(max_length=10)         
 
 
 class UserEmailVerification(models.Model):
@@ -65,4 +60,4 @@ class UserEmailVerification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
+         ordering = ['-created_at']
