@@ -14,6 +14,9 @@ from apps.users.models import User, Roles
 from apps.users.services import request_password_reset
 from project import settings
 
+from .serializers import DoctorSerializer, PatientSerializer, PharmacyUserSerializer
+from .models import Doctor, Patient, PharmacyUser
+
 
 class AuthViewSet(ViewSet):
     def get_permissions(self):
@@ -29,7 +32,10 @@ class AuthViewSet(ViewSet):
     def register(self, request):
         serializer = AuthRegisterSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            user = serializer.save()
+            # Set user role based on request data
+            user.role = request.data["role"]
+            user.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], detail=False, url_path='change-password')
@@ -91,3 +97,15 @@ class UserViewSet(ModelViewSet):
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
             return serializer.data
+
+class DoctorViewSet(ModelViewSet):
+    queryset = Doctor.objects.all()
+    serializer_class = DoctorSerializer
+
+class PatientViewSet(ModelViewSet):
+    queryset = Patient.objects.all()
+    serializer_class = PatientSerializer
+
+class PharmacyUserViewSet(ModelViewSet):
+    queryset = PharmacyUser.objects.all()
+    serializer_class = PharmacyUserSerializer

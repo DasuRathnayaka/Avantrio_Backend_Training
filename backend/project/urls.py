@@ -24,12 +24,15 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
 from apps.files.views import FileViewSet
-from apps.users.views import AuthViewSet, UserViewSet
+from apps.users.views import AuthViewSet, UserViewSet, DoctorViewSet, PatientViewSet, PharmacyUserViewSet
 
 router = DefaultRouter()
 router.register('auth', AuthViewSet, basename='auth')
 router.register('users', UserViewSet, basename='users')
 router.register('files', FileViewSet, basename='files')
+router.register('doctors', DoctorViewSet, basename='doctors')
+router.register('patients', PatientViewSet, basename='patients')
+router.register('pharmacy_users', PharmacyUserViewSet, basename='pharmacy_users')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

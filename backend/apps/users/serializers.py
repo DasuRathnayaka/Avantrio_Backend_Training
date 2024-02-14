@@ -6,6 +6,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from apps.users.models import Doctor, Patient, PharmacyUser
 
 from apps.users.error_codes import AccountErrorCodes
 
@@ -53,10 +54,6 @@ class AuthRegisterSerializer(serializers.ModelSerializer):
             # todo: Add logger to log the exception
             raise ValidationError(AccountErrorCodes.USER_EXIST)
 
-
-
-
-
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     email = serializers.CharField(write_only=True)
@@ -80,6 +77,31 @@ class UserSerializer(serializers.ModelSerializer):
         if 'email' in validated_data:
             validated_data['username'] = validated_data['email']
         return super().update(instance, validated_data)
+    
+class DoctorSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    specialty = serializers.CharField(max_length=50)
+
+    class Meta:
+        model = Doctor
+        fields = ['user','specialty']
+
+class PatientSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    age = serializers.IntegerField()
+    address = serializers.CharField(max_length=200)
+
+    class Meta:
+        model = Patient
+        fields = ['user','age', 'address']
+
+class PharmacyUserSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    registration_number = serializers.CharField(max_length=10)
+
+    class Meta:
+        model = PharmacyUser
+        fields = ['user','registration_number']
 
 
 class PasswordChangeSerializer(serializers.ModelSerializer):
