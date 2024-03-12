@@ -24,10 +24,11 @@ def create_user(validated_data):
 
 class AuthRegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True, write_only=True, min_length=6)
-
+    role = serializers.ChoiceField(choices=[( 'DOCTOR'), ('PATIENT'), ('PHARMACY USER')], write_only=True)  
+    
     class Meta:
         model = get_user_model()
-        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'confirm_password']
+        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'confirm_password','role']
         extra_kwargs = {
             'id': {'read_only': True},
             'first_name': {'required': True},
@@ -37,14 +38,17 @@ class AuthRegisterSerializer(serializers.ModelSerializer):
         }
 
     def validate_confirm_password(self, val):
-        password = self.initial_data['password']
+        password = self.initial_data.get('password')
         if val != password:
             raise ValidationError(AccountErrorCodes.PASSWORD_MISMATCH)
 
     @transaction.atomic
     def create(self, validated_data):
         try:
+            role = validated_data.pop('role')
             user = create_user(validated_data)
+            user.role = role
+            user.save()
             if settings.VERIFY_EMAIL:
                 user.is_active = False
                 user.save()
@@ -79,7 +83,7 @@ class UserSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
     
 class DoctorSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = AuthRegisterSerializer()
     specialty = serializers.CharField(max_length=50)
 
     class Meta:
@@ -87,7 +91,7 @@ class DoctorSerializer(serializers.ModelSerializer):
         fields = ['user','specialty']
 
 class PatientSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = AuthRegisterSerializer()
     age = serializers.IntegerField()
     address = serializers.CharField(max_length=200)
 
@@ -96,7 +100,7 @@ class PatientSerializer(serializers.ModelSerializer):
         fields = ['user','age', 'address']
 
 class PharmacyUserSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = AuthRegisterSerializer()
     registration_number = serializers.CharField(max_length=10)
 
     class Meta:

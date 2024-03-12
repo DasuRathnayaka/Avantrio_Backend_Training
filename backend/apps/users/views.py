@@ -30,6 +30,16 @@ class AuthViewSet(ViewSet):
 
     @action(methods=['post'], detail=False)
     def register(self, request):
+        role = request.data.get('role')
+        if role == Roles.DOCTOR:
+            serializer = DoctorSerializer(data=request.data)
+        elif role == Roles.PATIENT:
+            serializer = PatientSerializer(data=request.data)
+        elif role == Roles.PHARMACY_USER:
+            serializer = PharmacyUserSerializer(data=request.data)
+        else:
+            return Response({'detail': 'Invalid role'}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = AuthRegisterSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
@@ -96,16 +106,5 @@ class UserViewSet(ModelViewSet):
             serializer = ProfileUpdateSerializer(data=request.data, instance=request.user, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-            return serializer.data
+            return Response(serializer.data)
 
-class DoctorViewSet(ModelViewSet):
-    queryset = Doctor.objects.all()
-    serializer_class = DoctorSerializer
-
-class PatientViewSet(ModelViewSet):
-    queryset = Patient.objects.all()
-    serializer_class = PatientSerializer
-
-class PharmacyUserViewSet(ModelViewSet):
-    queryset = PharmacyUser.objects.all()
-    serializer_class = PharmacyUserSerializer
