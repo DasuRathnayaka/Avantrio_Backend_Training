@@ -24,7 +24,8 @@ def create_user(validated_data):
 
 class AuthRegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True, write_only=True, min_length=6)
-    role = serializers.ChoiceField(choices=[( 'DOCTOR'), ('PATIENT'), ('PHARMACY USER')], write_only=True)  
+    #role = serializers.ChoiceField(choices=[( 'DOCTOR'), ('PATIENT'), ('PHARMACY USER')], write_only=True) 
+    role = serializers.ChoiceField(choices=[('DOCTOR', 'Doctor'), ('PATIENT', 'Patient'), ('PHARMACY USER', 'Pharmacy User')], write_only=True) 
     
     class Meta:
         model = get_user_model()
@@ -63,6 +64,7 @@ class UserSerializer(serializers.ModelSerializer):
     email = serializers.CharField(write_only=True)
     
 
+
     class Meta:
         model = get_user_model()
         fields = [
@@ -90,6 +92,13 @@ class DoctorSerializer(serializers.ModelSerializer):
         model = Doctor
         fields = ['user','specialty']
 
+    def create(self, validated_data):
+        # Extract user data from nested serializer
+        user_data = validated_data.pop('user')
+        user_instance = AuthRegisterSerializer().create(user_data)  # Create user instance
+        doctor_instance = Doctor.objects.create(user=user_instance, **validated_data)
+        return doctor_instance    
+
 class PatientSerializer(serializers.ModelSerializer):
     user = AuthRegisterSerializer()
     age = serializers.IntegerField()
@@ -99,6 +108,13 @@ class PatientSerializer(serializers.ModelSerializer):
         model = Patient
         fields = ['user','age', 'address']
 
+    def create(self, validated_data):
+        # Extract user data from nested serializer
+        user_data = validated_data.pop('user')
+        user_instance = AuthRegisterSerializer().create(user_data)  # Create user instance
+        patient_instance = Patient.objects.create(user=user_instance, **validated_data)
+        return patient_instance    
+
 class PharmacyUserSerializer(serializers.ModelSerializer):
     user = AuthRegisterSerializer()
     registration_number = serializers.CharField(max_length=10)
@@ -106,6 +122,13 @@ class PharmacyUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = PharmacyUser
         fields = ['user','registration_number']
+
+    def create(self, validated_data):
+        # Extract user data from nested serializer
+        user_data = validated_data.pop('user')
+        user_instance = AuthRegisterSerializer().create(user_data)  # Create user instance
+        pharmacy_user_instance = PharmacyUser.objects.create(user=user_instance, **validated_data)
+        return pharmacy_user_instance    
 
 
 class PasswordChangeSerializer(serializers.ModelSerializer):

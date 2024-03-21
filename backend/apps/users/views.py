@@ -30,22 +30,36 @@ class AuthViewSet(ViewSet):
 
     @action(methods=['post'], detail=False)
     def register(self, request):
-        role = request.data.get('role')
-        if role == Roles.DOCTOR:
+        role = request.data.get('role')  
+        if role == 'DOCTOR':
             serializer = DoctorSerializer(data=request.data)
-        elif role == Roles.PATIENT:
+        elif role == 'PATIENT':
             serializer = PatientSerializer(data=request.data)
-        elif role == Roles.PHARMACY_USER:
+        elif role == 'PHARMACY USER':
             serializer = PharmacyUserSerializer(data=request.data)
         else:
             return Response({'detail': 'Invalid role'}, status=status.HTTP_400_BAD_REQUEST)
-
+            
         serializer = AuthRegisterSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
-            # Set user role based on request data
-            user.role = request.data["role"]
-            user.save()
+
+        if role == Roles.DOCTOR:
+            doctor_data = { 'user':user.id,'specialty': request.data.get('specialty')}
+            doctor_serializer = DoctorSerializer(data=doctor_data)
+            doctor_serializer.is_valid(raise_exception=True)
+            doctor_serializer.save()
+        elif role == Roles.PATIENT:
+            patient_data = {'user':user.id,'age': request.data.get('age'), 'address': request.data.get('address')}
+            patient_serializer = PatientSerializer(data=patient_data)
+            patient_serializer.is_valid(raise_exception=True)
+            patient_serializer.save()
+        elif role == Roles.PHARMACY_USER:
+            pharmacy_user_data = { 'user':user.id,'registration_number': request.data.get('registration_number')}
+            pharmacy_user_serializer = PharmacyUserSerializer(data=pharmacy_user_data)
+            pharmacy_user_serializer.is_valid(raise_exception=True)
+            pharmacy_user_serializer.save()
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], detail=False, url_path='change-password')
