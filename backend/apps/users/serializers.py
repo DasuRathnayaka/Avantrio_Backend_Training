@@ -24,8 +24,8 @@ def create_user(validated_data):
 
 class AuthRegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True, write_only=True, min_length=6)
-    #role = serializers.ChoiceField(choices=[( 'DOCTOR'), ('PATIENT'), ('PHARMACY USER')], write_only=True) 
-    role = serializers.ChoiceField(choices=[('DOCTOR', 'Doctor'), ('PATIENT', 'Patient'), ('PHARMACY USER', 'Pharmacy User')], write_only=True) 
+    role = serializers.ChoiceField(choices=[( 'DOCTOR'), ('PATIENT'), ('PHARMACY USER')], write_only=True) 
+    
     
     class Meta:
         model = get_user_model()
@@ -63,8 +63,6 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     email = serializers.CharField(write_only=True)
     
-
-
     class Meta:
         model = get_user_model()
         fields = [
