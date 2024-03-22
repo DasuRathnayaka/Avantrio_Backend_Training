@@ -14,6 +14,9 @@ from apps.users.models import User, Roles
 from apps.users.services import request_password_reset
 from project import settings
 
+from .serializers import DoctorSerializer, PatientSerializer, PharmacyUserSerializer
+from .models import Doctor, Patient, PharmacyUser
+
 
 class AuthViewSet(ViewSet):
     def get_permissions(self):
@@ -27,9 +30,36 @@ class AuthViewSet(ViewSet):
 
     @action(methods=['post'], detail=False)
     def register(self, request):
+        role = request.data.get('role')  
+        if role == 'DOCTOR':
+            serializer = DoctorSerializer(data=request.data)
+        elif role == 'PATIENT':
+            serializer = PatientSerializer(data=request.data)
+        elif role == 'PHARMACY USER':
+            serializer = PharmacyUserSerializer(data=request.data)
+        else:
+            return Response({'detail': 'Invalid role'}, status=status.HTTP_400_BAD_REQUEST)
+            
         serializer = AuthRegisterSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            user = serializer.save()
+
+        if role == Roles.DOCTOR:
+            doctor_data = { 'user':user.id,'specialty': request.data.get('specialty')}
+            doctor_serializer = DoctorSerializer(data=doctor_data)
+            doctor_serializer.is_valid(raise_exception=True)
+            doctor_serializer.save()
+        elif role == Roles.PATIENT:
+            patient_data = {'user':user.id,'age': request.data.get('age'), 'address': request.data.get('address')}
+            patient_serializer = PatientSerializer(data=patient_data)
+            patient_serializer.is_valid(raise_exception=True)
+            patient_serializer.save()
+        elif role == Roles.PHARMACY_USER:
+            pharmacy_user_data = { 'user':user.id,'registration_number': request.data.get('registration_number')}
+            pharmacy_user_serializer = PharmacyUserSerializer(data=pharmacy_user_data)
+            pharmacy_user_serializer.is_valid(raise_exception=True)
+            pharmacy_user_serializer.save()
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], detail=False, url_path='change-password')
@@ -90,4 +120,5 @@ class UserViewSet(ModelViewSet):
             serializer = ProfileUpdateSerializer(data=request.data, instance=request.user, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-            return serializer.data
+            return Response(serializer.data)
+

@@ -6,6 +6,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from apps.users.models import Doctor, Patient, PharmacyUser
 
 from apps.users.error_codes import AccountErrorCodes
 
@@ -23,10 +24,12 @@ def create_user(validated_data):
 
 class AuthRegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True, write_only=True, min_length=6)
-
+    role = serializers.ChoiceField(choices=[( 'DOCTOR'), ('PATIENT'), ('PHARMACY USER')], write_only=True) 
+    
+    
     class Meta:
         model = get_user_model()
-        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'confirm_password']
+        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'confirm_password','role']
         extra_kwargs = {
             'id': {'read_only': True},
             'first_name': {'required': True},
@@ -36,14 +39,17 @@ class AuthRegisterSerializer(serializers.ModelSerializer):
         }
 
     def validate_confirm_password(self, val):
-        password = self.initial_data['password']
+        password = self.initial_data.get('password')
         if val != password:
             raise ValidationError(AccountErrorCodes.PASSWORD_MISMATCH)
 
     @transaction.atomic
     def create(self, validated_data):
         try:
+            role = validated_data.pop('role')
             user = create_user(validated_data)
+            user.role = role
+            user.save()
             if settings.VERIFY_EMAIL:
                 user.is_active = False
                 user.save()
@@ -53,15 +59,10 @@ class AuthRegisterSerializer(serializers.ModelSerializer):
             # todo: Add logger to log the exception
             raise ValidationError(AccountErrorCodes.USER_EXIST)
 
-
-
-
-
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     email = serializers.CharField(write_only=True)
     
-
     class Meta:
         model = get_user_model()
         fields = [
@@ -80,6 +81,52 @@ class UserSerializer(serializers.ModelSerializer):
         if 'email' in validated_data:
             validated_data['username'] = validated_data['email']
         return super().update(instance, validated_data)
+    
+class DoctorSerializer(serializers.ModelSerializer):
+    user = AuthRegisterSerializer()
+    specialty = serializers.CharField(max_length=50)
+
+    class Meta:
+        model = Doctor
+        fields = ['user','specialty']
+
+    def create(self, validated_data):
+        # Extract user data from nested serializer
+        user_data = validated_data.pop('user')
+        user_instance = AuthRegisterSerializer().create(user_data)  # Create user instance
+        doctor_instance = Doctor.objects.create(user=user_instance, **validated_data)
+        return doctor_instance    
+
+class PatientSerializer(serializers.ModelSerializer):
+    user = AuthRegisterSerializer()
+    age = serializers.IntegerField()
+    address = serializers.CharField(max_length=200)
+
+    class Meta:
+        model = Patient
+        fields = ['user','age', 'address']
+
+    def create(self, validated_data):
+        # Extract user data from nested serializer
+        user_data = validated_data.pop('user')
+        user_instance = AuthRegisterSerializer().create(user_data)  # Create user instance
+        patient_instance = Patient.objects.create(user=user_instance, **validated_data)
+        return patient_instance    
+
+class PharmacyUserSerializer(serializers.ModelSerializer):
+    user = AuthRegisterSerializer()
+    registration_number = serializers.CharField(max_length=10)
+
+    class Meta:
+        model = PharmacyUser
+        fields = ['user','registration_number']
+
+    def create(self, validated_data):
+        # Extract user data from nested serializer
+        user_data = validated_data.pop('user')
+        user_instance = AuthRegisterSerializer().create(user_data)  # Create user instance
+        pharmacy_user_instance = PharmacyUser.objects.create(user=user_instance, **validated_data)
+        return pharmacy_user_instance    
 
 
 class PasswordChangeSerializer(serializers.ModelSerializer):
