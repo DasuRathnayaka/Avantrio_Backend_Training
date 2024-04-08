@@ -15,69 +15,69 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+    #def create(self, request, *args, **kwargs):
+        #serializer = self.get_serializer(data=request.data)
+        #serializer.is_valid(raise_exception=True)
         
         # Validate appointment data
-        try:
-            validated_data = serializer.validated_data
-            doctor = validated_data['doctor']
-            start_time = validated_data['start_time']
-            end_time = validated_data['end_time']
+        #try:
+            #validated_data = serializer.validated_data
+            #doctor = validated_data['doctor']
+            #start_time = validated_data['start_time']
+            #end_time = validated_data['end_time']
             
             # Check for overlapping appointments
-            overlapping_appointments = Appointment.objects.filter(
-                doctor=doctor,
-                start_time__lt=end_time,
-                end_time__gt=start_time
-            )
-            if overlapping_appointments.exists():
-                return Response({"error": "Appointment slot overlaps with existing appointments."}, status=status.HTTP_400_BAD_REQUEST)
+            #overlapping_appointments = Appointment.objects.filter(
+                #doctor=doctor,
+                #start_time__lt=end_time,
+                #end_time__gt=start_time
+            #)
+            #if overlapping_appointments.exists():
+                #return Response({"error": "Appointment slot overlaps with existing appointments."}, status=status.HTTP_400_BAD_REQUEST)
             
             # Check if appointment duration is exactly 15 minutes
-            appointment_duration = end_time - start_time
-            if appointment_duration.total_seconds() != 15 * 60:
-                return Response({"error": "Appointment duration must be exactly 15 minutes."}, status=status.HTTP_400_BAD_REQUEST)
+            #appointment_duration = end_time - start_time
+            #if appointment_duration.total_seconds() != 15 * 60:
+                #return Response({"error": "Appointment duration must be exactly 15 minutes."}, status=status.HTTP_400_BAD_REQUEST)
             
             # Proceed with creating the appointment if validations pass
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        except KeyError:
-            return Response({"error": "Invalid appointment data."}, status=status.HTTP_400_BAD_REQUEST)
+            #self.perform_create(serializer)
+            #headers = self.get_success_headers(serializer.data)
+            #return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        #except KeyError:
+            #return Response({"error": "Invalid appointment data."}, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data)
-        serializer.is_valid(raise_exception=True)
+    #def update(self, request, *args, **kwargs):
+        #instance = self.get_object()
+        #serializer = self.get_serializer(instance, data=request.data)
+        #serializer.is_valid(raise_exception=True)
         
         # Validate appointment data
-        try:
-            validated_data = serializer.validated_data
-            doctor = validated_data['doctor']
-            start_time = validated_data['start_time']
-            end_time = validated_data['end_time']
+        #try:
+            #validated_data = serializer.validated_data
+            #doctor = validated_data['doctor']
+            #start_time = validated_data['start_time']
+            #end_time = validated_data['end_time']
             
             # Check for overlapping appointments
-            overlapping_appointments = Appointment.objects.filter(
-                doctor=doctor,
-                start_time__lt=end_time,
-                end_time__gt=start_time
-            ).exclude(pk=instance.pk)
-            if overlapping_appointments.exists():
-                return Response({"error": "Appointment slot overlaps with existing appointments."}, status=status.HTTP_400_BAD_REQUEST)
+            #overlapping_appointments = Appointment.objects.filter(
+                #doctor=doctor,
+                #start_time__lt=end_time,
+                #end_time__gt=start_time
+            #).exclude(pk=instance.pk)
+            #if overlapping_appointments.exists():
+               # return Response({"error": "Appointment slot overlaps with existing appointments."}, status=status.HTTP_400_BAD_REQUEST)
             
             # Check if appointment duration is exactly 15 minutes
-            appointment_duration = end_time - start_time
-            if appointment_duration.total_seconds() != 15 * 60:
-                return Response({"error": "Appointment duration must be exactly 15 minutes."}, status=status.HTTP_400_BAD_REQUEST)
+           # appointment_duration = end_time - start_time
+            #if appointment_duration.total_seconds() != 15 * 60:
+                #return Response({"error": "Appointment duration must be exactly 15 minutes."}, status=status.HTTP_400_BAD_REQUEST)
             
             # Proceed with updating the appointment if validations pass
-            self.perform_update(serializer)
-            return Response(serializer.data)
-        except KeyError:
-            return Response({"error": "Invalid appointment data."}, status=status.HTTP_400_BAD_REQUEST)
+            #self.perform_update(serializer)
+            #return Response(serializer.data)
+        #except KeyError:
+            #return Response({"error": "Invalid appointment data."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FormAssessmentViewSet(viewsets.ModelViewSet):

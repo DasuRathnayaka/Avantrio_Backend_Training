@@ -11,6 +11,31 @@ class AppointmentSerializer(serializers.ModelSerializer):
         model = Appointment
         fields = '__all__'
 
+    #def validate(self, data):
+        
+        # Validate that the appointment slot does not overlap with existing appointments and that the appointment duration is exactly 15 minutes.
+        
+        #doctor = data['doctor']
+        #start_time = data['start_time']
+        #end_time = data['end_time']
+
+        # Check if there are any existing appointments for the same doctor and overlapping time slot
+        #overlapping_appointments = Appointment.objects.filter(
+            #doctor=doctor,
+            #start_time__lt=end_time,
+            #end_time__gt=start_time
+       # ).exclude(pk=self.instance.pk if self.instance else None)
+
+        #if overlapping_appointments.exists():
+            #raise serializers.ValidationError("Appointment slot overlaps with existing appointments.")
+
+        # Check if the appointment duration is exactly 15 minutes
+        #appointment_duration = end_time - start_time
+        #if appointment_duration.total_seconds() != 15 * 60:
+            #raise serializers.ValidationError("Appointment duration must be exactly 15 minutes.")
+
+        #return data    
+
 class FormAssessmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormAssessment

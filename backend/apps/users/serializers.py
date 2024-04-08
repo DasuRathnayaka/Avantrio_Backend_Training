@@ -12,6 +12,8 @@ from apps.users.error_codes import AccountErrorCodes
 
 from project import settings
 
+from apps.users.models import User
+
 
 def create_user(validated_data):
     validated_data.pop('confirm_password')
@@ -23,13 +25,18 @@ def create_user(validated_data):
 
 
 class AuthRegisterSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(required=True, write_only=True, min_length=6)
+    #confirm_password = serializers.CharField(required=True, write_only=True, min_length=6)
     role = serializers.ChoiceField(choices=[( 'DOCTOR'), ('PATIENT'), ('PHARMACY USER')], write_only=True) 
+    #specialty = serializers.CharField(required=False)  # Allow the specialty field
+    #age = serializers.IntegerField()
+    #address = serializers.CharField(max_length=200)
+    registration_number = serializers.CharField(max_length=10)
+
     
     
     class Meta:
         model = get_user_model()
-        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'confirm_password','role']
+        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'role','registration_number']
         extra_kwargs = {
             'id': {'read_only': True},
             'first_name': {'required': True},
@@ -37,7 +44,8 @@ class AuthRegisterSerializer(serializers.ModelSerializer):
             'email': {'required': True},
             'password': {'write_only': True, 'min_length': 6},
         }
-
+    
+    
     def validate_confirm_password(self, val):
         password = self.initial_data.get('password')
         if val != password:
@@ -47,17 +55,41 @@ class AuthRegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             role = validated_data.pop('role')
-            user = create_user(validated_data)
-            user.role = role
-            user.save()
+            specialty = validated_data.pop('specialty', None)  # Pop specialty field if exists
+            age = validated_data.pop('age', None)
+            address = validated_data.pop('address', None)
+            registration_number = validated_data.pop('registration_number', None)
+            username = validated_data.pop('email')  # Assuming email is used as username
+            password = validated_data.pop('password')
+        
+            user = get_user_model().objects.create_user(username=username, password=password, **validated_data)
+           
+            if role == 'DOCTOR':
+    
+                doctor_instance = Doctor.objects.create(user=user, specialty=specialty)
+                return doctor_instance
+            
+            elif role == 'PATIENT':
+                
+                patient_instance = Patient.objects.create(user=user, age=age, address = address)
+                return patient_instance
+            
+            elif role == 'PHARMACY USER':
+               
+                pharmacy_user_instance = PharmacyUser.objects.create(user=user, registration_number = registration_number)
+                return pharmacy_user_instance         
+            
+            
             if settings.VERIFY_EMAIL:
-                user.is_active = False
-                user.save()
-                user.generate_email_verification_code()
+              user.is_active = False
+              user.save()
+              user.generate_email_verification_code()
+
             return user
         except django.db.utils.IntegrityError:
-            # todo: Add logger to log the exception
+               # todo: Add logger to log the exception
             raise ValidationError(AccountErrorCodes.USER_EXIST)
+    
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -95,7 +127,8 @@ class DoctorSerializer(serializers.ModelSerializer):
         user_data = validated_data.pop('user')
         user_instance = AuthRegisterSerializer().create(user_data)  # Create user instance
         doctor_instance = Doctor.objects.create(user=user_instance, **validated_data)
-        return doctor_instance    
+        return doctor_instance 
+         
 
 class PatientSerializer(serializers.ModelSerializer):
     user = AuthRegisterSerializer()
