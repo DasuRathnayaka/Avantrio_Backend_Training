@@ -36,7 +36,7 @@ class AuthViewSet(ViewSet):
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
             
-            # Handle role-specific data creation (using nested serializers if needed)
+            # Handle role-specific data creation 
             if request.data.get('role') == Roles.DOCTOR:
                 doctor_data = {'user': user.id, 'specialty': request.data.get('specialty')}
                 doctor_serializer = DoctorSerializer(data=doctor_data)
@@ -53,7 +53,9 @@ class AuthViewSet(ViewSet):
                 pharmacy_user_data = {'user': user.id, 'registration_number': request.data.get('registration_number')}
                 pharmacy_user_serializer = PharmacyUserSerializer(data=pharmacy_user_data)
                 if pharmacy_user_serializer.is_valid(raise_exception=True):
-                    pharmacy_user_serializer.save()  
+                    pharmacy_user_serializer.save() 
+
+            return Response({"message": "User registered successfully."}, status=status.HTTP_201_CREATED)         
 
     @api_view(['POST'])
     def create_doctor(request):

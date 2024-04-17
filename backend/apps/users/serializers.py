@@ -27,16 +27,16 @@ def create_user(validated_data):
 class AuthRegisterSerializer(serializers.ModelSerializer):
     #confirm_password = serializers.CharField(required=True, write_only=True, min_length=6)
     role = serializers.ChoiceField(choices=[( 'DOCTOR'), ('PATIENT'), ('PHARMACY USER')], write_only=True) 
-    #specialty = serializers.CharField(required=False)  # Allow the specialty field
-    #age = serializers.IntegerField()
-    #address = serializers.CharField(max_length=200)
-    registration_number = serializers.CharField(max_length=10)
+    specialty = serializers.CharField(required=False)  # Allow the specialty field
+    age = serializers.IntegerField(required=False)
+    address = serializers.CharField(max_length=200 , required=False)
+    registration_number = serializers.CharField(max_length=10, required=False)
 
     
     
     class Meta:
         model = get_user_model()
-        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'role','registration_number']
+        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'role','specialty','age','address','registration_number']
         extra_kwargs = {
             'id': {'read_only': True},
             'first_name': {'required': True},
@@ -115,7 +115,7 @@ class UserSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
     
 class DoctorSerializer(serializers.ModelSerializer):
-    user = AuthRegisterSerializer()
+    user = AuthRegisterSerializer(read_only=True)
     specialty = serializers.CharField(max_length=50)
 
     class Meta:
@@ -123,15 +123,15 @@ class DoctorSerializer(serializers.ModelSerializer):
         fields = ['user','specialty']
 
     def create(self, validated_data):
-        # Extract user data from nested serializer
+        
         user_data = validated_data.pop('user')
-        user_instance = AuthRegisterSerializer().create(user_data)  # Create user instance
+        user_instance = AuthRegisterSerializer().create(user_data)  
         doctor_instance = Doctor.objects.create(user=user_instance, **validated_data)
         return doctor_instance 
          
 
 class PatientSerializer(serializers.ModelSerializer):
-    user = AuthRegisterSerializer()
+    user = AuthRegisterSerializer(read_only=True)
     age = serializers.IntegerField()
     address = serializers.CharField(max_length=200)
 
@@ -140,14 +140,14 @@ class PatientSerializer(serializers.ModelSerializer):
         fields = ['user','age', 'address']
 
     def create(self, validated_data):
-        # Extract user data from nested serializer
+        
         user_data = validated_data.pop('user')
-        user_instance = AuthRegisterSerializer().create(user_data)  # Create user instance
+        user_instance = AuthRegisterSerializer().create(user_data) 
         patient_instance = Patient.objects.create(user=user_instance, **validated_data)
         return patient_instance    
 
 class PharmacyUserSerializer(serializers.ModelSerializer):
-    user = AuthRegisterSerializer()
+    user = AuthRegisterSerializer(read_only=True)
     registration_number = serializers.CharField(max_length=10)
 
     class Meta:
@@ -155,9 +155,9 @@ class PharmacyUserSerializer(serializers.ModelSerializer):
         fields = ['user','registration_number']
 
     def create(self, validated_data):
-        # Extract user data from nested serializer
+     
         user_data = validated_data.pop('user')
-        user_instance = AuthRegisterSerializer().create(user_data)  # Create user instance
+        user_instance = AuthRegisterSerializer().create(user_data)  
         pharmacy_user_instance = PharmacyUser.objects.create(user=user_instance, **validated_data)
         return pharmacy_user_instance    
 
