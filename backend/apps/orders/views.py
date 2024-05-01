@@ -10,20 +10,10 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
-    def get_permissions(self):
-        if self.action in ['create', 'update']:
-            return [IsPatient()]
-        elif self.action in ['list', 'retrieve']:
-            return [IsPharmacyUser() | IsPatient()]
-        return [IsAuthenticated()]
+    
 
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
 
-    def get_permissions(self):
-        if self.action in ['create', 'update']:
-            return [IsPharmacyUser()]
-        elif self.action in ['list', 'retrieve']:
-            return [IsPharmacyUser() | IsPatient()]
-        return [IsAuthenticated()]
+    
