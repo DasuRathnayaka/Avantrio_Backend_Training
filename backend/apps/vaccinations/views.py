@@ -10,8 +10,12 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 class VaccineViewSet(viewsets.ModelViewSet):
     queryset = Vaccine.objects.all()
     serializer_class = VaccineSerializer
-
     
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [IsPharmacyUser() | IsPatient()]
+        return [IsAuthenticated()]
+  
 
 class CountryViewSet(viewsets.ModelViewSet):
     queryset = Country.objects.all()
