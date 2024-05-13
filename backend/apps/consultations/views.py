@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from apps.users.permissions import IsDoctor, IsPatient, IsPharmacyUser
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.decorators import action
 
 class AvailabilityViewSet(viewsets.ModelViewSet):
     queryset = Availability.objects.all()
@@ -15,21 +16,21 @@ class AvailabilityViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update']:
-            return [IsDoctor()]
+            permission_classes = [IsDoctor | IsAdminUser]
         elif self.action in ['list', 'retrieve']:
-            return [IsDoctor() | IsPatient()]
-        return [IsAuthenticated()]
+            permission_classes = [IsDoctor | IsPatient | IsAdminUser]
+        return [permission() for permission in permission_classes]    
     
 class AppointmentViewSet(viewsets.ModelViewSet):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
-
+    
     def get_permissions(self):
         if self.action in ['create', 'update']:
-            return [IsDoctor()]
+            permission_classes = [IsDoctor | IsAdminUser]
         elif self.action in ['list', 'retrieve']:
-            return [IsDoctor() | IsPatient()]
-        return [IsAuthenticated()]
+            permission_classes = [IsDoctor | IsPatient | IsAdminUser]
+        return [permission() for permission in permission_classes]    
 
 
 class FormAssessmentViewSet(viewsets.ModelViewSet):
@@ -38,10 +39,10 @@ class FormAssessmentViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update']:
-            return [IsPatient()]
+            permission_classes = [IsPatient | IsAdminUser]
         elif self.action in ['list', 'retrieve']:
-            return [IsDoctor() | IsPatient()]
-        return [IsAuthenticated()]
+            permission_classes = [IsDoctor | IsPatient | IsAdminUser]
+        return [permission() for permission in permission_classes]    
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
@@ -49,8 +50,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [IsDoctor() | IsPatient()]
-        return [IsAuthenticated()]
+            permission_classes = [IsDoctor | IsPatient | IsAdminUser]
+        return [permission() for permission in permission_classes]    
 
     
 class AnswerViewSet(viewsets.ModelViewSet):
@@ -59,10 +60,10 @@ class AnswerViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update']:
-            return [IsPatient()]
+            permission_classes = [IsPatient | IsAdminUser]
         elif self.action in ['list', 'retrieve']:
-                return [IsDoctor() | IsPatient()]
-        return [IsAuthenticated()]     
+            permission_classes = [IsDoctor | IsPatient | IsAdminUser]
+        return [permission() for permission in permission_classes]       
 
 class NoteViewSet(viewsets.ModelViewSet):
     queryset = Note.objects.all()
@@ -70,21 +71,21 @@ class NoteViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update']:
-            return [IsPatient()]
+            permission_classes = [IsPatient | IsAdminUser]
         elif self.action in ['list', 'retrieve']:
-                return [IsDoctor() | IsPatient()]
-        return [IsAuthenticated()] 
+            permission_classes = [IsDoctor | IsPatient | IsAdminUser]
+        return [permission() for permission in permission_classes]    
     
 class PrescriptionViewSet(viewsets.ModelViewSet):
     queryset = Prescription.objects.all()
     serializer_class = PrescriptionSerializer
-
+    
     def get_permissions(self):
-        if self.action == 'create':
-            return [IsDoctor()]
-        elif self.action in ['retrieve', 'update']:
-            return [IsPharmacyUser() | IsPatient()]
-        return [IsAuthenticated()]
+        if self.action in ['create']:
+            permission_classes = [IsDoctor | IsAdminUser]
+        elif self.action in ['list', 'retrieve']:
+            permission_classes = [IsDoctor | IsPatient | IsAdminUser]
+        return [permission() for permission in permission_classes]    
 
 
 class MedicineViewSet(viewsets.ModelViewSet):
@@ -93,10 +94,10 @@ class MedicineViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         if self.action in ['create', 'update']:
-            return [IsPharmacyUser()]
+            permission_classes = [IsPharmacyUser | IsAdminUser]
         elif self.action in ['list', 'retrieve']:
-                return [IsDoctor() | IsPatient() | IsPharmacyUser() ]
-        return [IsAuthenticated()]
+            permission_classes = [IsDoctor | IsPatient | IsAdminUser| IsPharmacyUser ]
+        return [permission() for permission in permission_classes]    
     
 
 class DocumentViewSet(viewsets.ModelViewSet):
@@ -105,8 +106,10 @@ class DocumentViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update']:
-            return [IsPatient()]
+            permission_classes = [IsPatient | IsAdminUser]
         elif self.action in ['list', 'retrieve']:
-                return [IsDoctor() | IsPatient()]
-        return [IsAuthenticated()] 
+            permission_classes = [IsDoctor | IsPatient | IsAdminUser ]
+        return [permission() for permission in permission_classes]    
+    
+
 

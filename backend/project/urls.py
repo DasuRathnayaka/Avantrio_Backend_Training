@@ -48,6 +48,9 @@ router.register('medicines', MedicineViewSet, basename='medicines')
 router.register('documents', DocumentViewSet, basename='documents')
 router.register('invoices', InvoiceViewSet, basename='invoices')
 
+
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
