@@ -6,6 +6,8 @@ from .serializers import VaccineSerializer, CountrySerializer, PharmacySerialize
 from apps.users.permissions import IsPatient, IsPharmacyUser
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 class VaccineViewSet(viewsets.ModelViewSet):
     queryset = Vaccine.objects.all()
@@ -24,3 +26,15 @@ class CountryViewSet(viewsets.ModelViewSet):
 class PharmacyViewSet(viewsets.ModelViewSet):
     queryset = Pharmacy.objects.all()
     serializer_class = PharmacySerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [IsPatient | IsAdminUser| IsPharmacyUser ]
+        return [permission() for permission in permission_classes]    
+    
+    @action(detail=True, methods=['get'])
+    def vaccines(self, request, pk=None):
+        pharmacy = self.get_object()
+        vaccines = pharmacy.vaccines.all()
+        serializer = VaccineSerializer(vaccines, many=True)
+        return Response(serializer.data)
