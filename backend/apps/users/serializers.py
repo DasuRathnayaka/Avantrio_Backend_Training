@@ -55,11 +55,11 @@ class AuthRegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             role = validated_data.pop('role')
-            specialty = validated_data.pop('specialty', None)  # Pop specialty field if exists
+            specialty = validated_data.pop('specialty', None)  
             age = validated_data.pop('age', None)
             address = validated_data.pop('address', None)
             registration_number = validated_data.pop('registration_number', None)
-            username = validated_data.pop('email')  # Assuming email is used as username
+            username = validated_data.pop('email')  
             password = validated_data.pop('password')
         
             user = get_user_model().objects.create_user(username=username, password=password, **validated_data)
