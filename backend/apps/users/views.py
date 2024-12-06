@@ -14,6 +14,14 @@ from apps.users.models import User, Roles
 from apps.users.services import request_password_reset
 from project import settings
 
+from .serializers import DoctorSerializer, PatientSerializer, PharmacyUserSerializer
+from .models import Doctor, Patient, PharmacyUser
+
+from rest_framework.decorators import api_view
+
+from .permissions import IsPatient, IsDoctor, IsPharmacyUser
+from .services import book_consultation, request_forms, join_consultation, collect_medicine, request_vaccinations, assess_forms, dispense_prescription, dispense_orders
+
 
 class AuthViewSet(ViewSet):
     def get_permissions(self):
@@ -29,8 +37,56 @@ class AuthViewSet(ViewSet):
     def register(self, request):
         serializer = AuthRegisterSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            user = serializer.save()
+            
+            # Handle role-specific data creation 
+            if request.data.get('role') == Roles.DOCTOR:
+                doctor_data = {'user': user.id, 'specialty': request.data.get('specialty')}
+                doctor_serializer = DoctorSerializer(data=doctor_data)
+                if doctor_serializer.is_valid(raise_exception=True):
+                    doctor_serializer.save()
+
+            if request.data.get('role') == Roles.PATIENT:
+                patient_data = {'user': user.id, 'age': request.data.get('age'), 'address': request.data.get('address')}
+                patient_serializer = PatientSerializer(data=patient_data)
+                if patient_serializer.is_valid(raise_exception=True):
+                    patient_serializer.save()
+
+            if request.data.get('role') == Roles.PHARMACY_USER:
+                pharmacy_user_data = {'user': user.id, 'registration_number': request.data.get('registration_number')}
+                pharmacy_user_serializer = PharmacyUserSerializer(data=pharmacy_user_data)
+                if pharmacy_user_serializer.is_valid(raise_exception=True):
+                    pharmacy_user_serializer.save() 
+
+            return Response({"message": "User registered successfully."}, status=status.HTTP_201_CREATED)         
+
+    @api_view(['POST'])
+    def create_doctor(request):
+           if request.method == 'POST':
+              doctor_serializer = DoctorSerializer(data=request.data)
+              if doctor_serializer.is_valid():
+                doctor_serializer.save()
+                return Response(doctor_serializer.data, status=status.HTTP_201_CREATED)
+              return Response(doctor_serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
+
+    @api_view(['POST'])
+    def create_patient(request):
+           if request.method == 'POST':
+              patient_serializer = PatientSerializer(data=request.data)
+              if patient_serializer.is_valid():
+                patient_serializer.save()
+                return Response(patient_serializer.data, status=status.HTTP_201_CREATED)
+              return Response(patient_serializer.errors, status=status.HTTP_400_BAD_REQUEST)            
+
+    @api_view(['POST'])
+    def create_pharmacy_user(request):
+           if request.method == 'POST':
+              pharmacy_user_serializer = PharmacyUserSerializer(data=request.data)
+              if pharmacy_user_serializer.is_valid():
+                pharmacy_user_serializer.save()
+                return Response(pharmacy_user_serializer.data, status=status.HTTP_201_CREATED)
+              return Response(pharmacy_user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)                                     
+                                   
 
     @action(methods=['post'], detail=False, url_path='change-password')
     def change_password(self, request):
@@ -90,4 +146,5 @@ class UserViewSet(ModelViewSet):
             serializer = ProfileUpdateSerializer(data=request.data, instance=request.user, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-            return serializer.data
+            return Response(serializer.data)
+
