@@ -4,6 +4,8 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.management import call_command
 
+import asyncio
+
 # Add template extensions
 from django.template.loader import render_to_string
 
@@ -35,3 +37,24 @@ def send_email(subject, to, template=None, data=None, message=None):
     if template:
         message.attach_alternative(html_message, "text/html")
     message.send()
+
+
+
+async def book_consultation_async(user, doctor_id, time_slot):
+    print(f"Booking consultation for user {user} with doctor {doctor_id} at time slot {time_slot}...")
+    await asyncio.sleep(2)  # Simulate some asynchronous operation
+    print("Consultation booked successfully!")
+
+async def main():
+    # Example usage of booking a consultation asynchronously
+    user = "Dasuni"
+    doctor_id = "1234"
+    time_slot = "8.00 p.m"
+
+    print("Starting the booking process...")
+    await book_consultation_async(user, doctor_id, time_slot)
+    print("Booking process completed!")
+
+# Run the main function in an event loop
+if __name__ == "__main__":
+    asyncio.run(main())
