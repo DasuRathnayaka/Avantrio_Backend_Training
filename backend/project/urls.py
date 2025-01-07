@@ -25,11 +25,28 @@ from rest_framework.routers import DefaultRouter
 
 from apps.files.views import FileViewSet
 from apps.users.views import AuthViewSet, UserViewSet
+from apps.consultations.views import AvailabilityViewSet, AppointmentViewSet, QuestionViewSet,FormAssessmentViewSet,AnswerViewSet,NoteViewSet,PrescriptionViewSet,MedicineViewSet,DocumentViewSet
+from apps.orders.views import OrderViewSet, InvoiceViewSet
+from apps.vaccinations.views import VaccineViewSet, CountryViewSet, PharmacyViewSet
 
 router = DefaultRouter()
 router.register('auth', AuthViewSet, basename='auth')
 router.register('users', UserViewSet, basename='users')
 router.register('files', FileViewSet, basename='files')
+router.register('availabilities', AvailabilityViewSet, basename='availabilities')
+router.register('appointments', AppointmentViewSet, basename='appointments')
+router.register('questions', QuestionViewSet, basename='qusetionss')
+router.register('orders', OrderViewSet, basename='orders')
+router.register('vaccines', VaccineViewSet, basename='vaccines')
+router.register('countries',CountryViewSet, basename='countries')
+router.register('pharmacies', PharmacyViewSet, basename='pharmacies')
+router.register('formassessments', FormAssessmentViewSet, basename='formassessments')
+router.register('answers', AnswerViewSet, basename='answers')
+router.register('notes', NoteViewSet, basename='notes')
+router.register('prescriptions', PrescriptionViewSet, basename='prescriptions')
+router.register('medicines', MedicineViewSet, basename='medicines')
+router.register('documents', DocumentViewSet, basename='documents')
+router.register('invoices', InvoiceViewSet, basename='invoices')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

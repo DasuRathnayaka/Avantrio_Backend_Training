@@ -5,7 +5,6 @@ from django.utils.translation import gettext_lazy as _
 import uuid
 
 from safedelete.models import SafeDeleteModel
-
 from apps.common.email_templates import EmailTemplates
 from apps.common.services import generate_token, send_mail
 
@@ -47,7 +46,6 @@ class Patient(models.Model):
 class PharmacyUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name = 'pharmacy_user')
     registration_number = models.CharField(max_length=10)         
-
 
 class UserEmailVerification(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
